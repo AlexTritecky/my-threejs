@@ -15,16 +15,12 @@ import { SphereService } from '../services/sphere.service';
 export class SphereComponent implements AfterViewInit, OnDestroy {
   @ViewChild('canvas', { static: true }) private canvasRef!: ElementRef;
 
-  private get canvas(): HTMLCanvasElement {
-    return this.canvasRef.nativeElement;
-  }
-
   constructor(private sphereService: SphereService) {}
 
   ngAfterViewInit() {
     this.sphereService.initializeRenderer(this.canvasRef);
   }
   ngOnDestroy() {
-    // Add any necessary cleanup logic
+    this.sphereService.disposeResources();
   }
 }

@@ -40,6 +40,38 @@ export class SphereService {
     this.animate();
   }
 
+  public disposeResources(): void {
+    // Dispose geometries and materials
+    if (this.strokes.geometry) {
+      this.strokes.geometry.dispose();
+    }
+    if (this.dotStrokes.geometry) {
+      this.dotStrokes.geometry.dispose();
+    }
+    if (this.dotsMaterial) {
+      this.dotsMaterial.dispose();
+    }
+    if (this.strokesMaterial) {
+      this.strokesMaterial.dispose();
+    }
+
+    // Remove objects from scene
+    if (this.galaxy) {
+      this.scene.remove(this.galaxy);
+    }
+
+    // Dispose of texture if used
+    // e.g., dotTexture.dispose();
+
+    // Dispose of other resources
+    this.renderer.dispose();
+    this.controls.dispose();
+
+    // Optionally, reset other resources
+    // e.g., this.clock = null;
+  }
+
+
   private initThree(): void {
     this.scene = new THREE.Scene();
     this.scene.fog = new THREE.Fog(0x000000, 800, 2500);
