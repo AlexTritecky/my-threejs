@@ -19,10 +19,12 @@ export class SphereService {
   private positions: Position[] = [];
   private userData!: Options;
 
+  private clock: THREE.Clock;
+
   constructor() {
     this.userData = this.createOptions();
     this.createPositions();
-
+    this.clock = new THREE.Clock();
   }
 
   public initializeRenderer(canvas: ElementRef<HTMLCanvasElement>): void {
@@ -49,8 +51,6 @@ export class SphereService {
     this.camera.lookAt(new THREE.Vector3(0, 0, 0));
 
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-
-    // ... Additional initialization logic for galaxy, materials, etc.
 
     this.galaxy = new THREE.Object3D();
     this.scene.add(this.galaxy);
@@ -87,27 +87,22 @@ export class SphereService {
   }
 
   private createScene(): void {
-    // Set the size of the renderer
     const ww = window.innerWidth;
     const wh = window.innerHeight;
     this.renderer.setSize(ww, wh);
     this.renderer.setPixelRatio(window.devicePixelRatio > 1 ? 2 : 1);
     this.renderer.setClearColor(0x000000);
 
-    // Create and configure the camera
     this.camera = new THREE.PerspectiveCamera(50, ww / wh, 0.1, 10000);
     this.camera.position.set(0, 100, 600);
     this.camera.lookAt(new THREE.Vector3(0, 0, 0));
 
-    // Create the scene and add fog
     this.scene = new THREE.Scene();
     this.scene.fog = new THREE.Fog(0x000000, 800, 2500);
 
-    // Create the galaxy as an Object3D and add it to the scene
     this.galaxy = new THREE.Object3D();
     this.scene.add(this.galaxy);
 
-    // Load textures and create materials for dots and strokes
     const dotTexture = new THREE.TextureLoader().load(
       'https://s3-us-west-2.amazonaws.com/s.cdpn.io/127738/dotTexture.png'
     );
@@ -124,7 +119,6 @@ export class SphereService {
       opacity: this.userData.linesOpacity,
     });
 
-    // Create the strokes and dotStrokes geometries and add them to the galaxy
     this.strokes = new THREE.LineSegments(
       new THREE.BufferGeometry(),
       this.strokesMaterial
@@ -136,22 +130,21 @@ export class SphereService {
     );
     this.galaxy.add(this.dotStrokes);
 
-    // Initialize the controls for camera manipulation
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
 
-    // Call the createStrokes method to initialize the strokes and dots
     this.createStrokes();
   }
 
   private animate(): void {
     requestAnimationFrame(() => this.animate());
 
-    // Update controls if they are being used
+    this.applyChaoticMovement(this.strokes.geometry, 0.4);
+    this.applyChaoticMovement(this.dotStrokes.geometry, 0.8);
+
     if (this.controls) {
       this.controls.update();
     }
 
-    // Render the scene and camera
     this.renderer.render(this.scene, this.camera);
   }
 
@@ -244,5 +237,21 @@ export class SphereService {
     }
 
     this.renderer.setClearColor(new THREE.Color(this.userData.backgroundColor));
+  }
+
+  private applyChaoticMovement(
+    geometry: THREE.BufferGeometry,
+    magnitude: number
+  ): void {
+    const elapsedTime = this.clock.getElapsedTime();
+    const positions = geometry.attributes['position'].array;
+
+    for (let i = 0; i < positions.length; i += 3) {
+      positions[i] += Math.sin(elapsedTime + i) * magnitude;
+      positions[i + 1] += Math.cos(elapsedTime + i) * magnitude;
+      positions[i + 2] += Math.sin(elapsedTime + i) * magnitude;
+    }
+
+    geometry.attributes['position'].needsUpdate = true;
   }
 }
