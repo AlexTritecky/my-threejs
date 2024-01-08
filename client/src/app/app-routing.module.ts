@@ -12,6 +12,11 @@ const routes: Routes = [
     loadChildren: () =>
       import('./features/sphere/sphere.module').then((m) => m.SphereModule),
   },
+  {
+    path: 'cube',
+    loadChildren: () =>
+      import('./features/cube/cube.module').then((m) => m.CubeModule),
+  }
 ];
 
 @NgModule({
